@@ -24,7 +24,7 @@ func main() {
 		for i:=0;i<100;i++ {
 			key:="key:1"
 			cli.Delete(context.Background(),key)
-			print("deleted")
+			//print("deleted")
 		}
 	}()
 	select {
