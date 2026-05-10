@@ -4,6 +4,7 @@ import (
 	"cache"
 	"context"
 	"fmt"
+	"log"
 	"time"
 )
 
@@ -15,9 +16,12 @@ func main() {
 		panic(err)
 	}
 	cli.Set(context.Background(),"k1",[]byte("v1"))
-	cli.SetWithExpiration(context.Background(),"k2",[]byte("v2"),2*time.Second)
-	time.Sleep(2*time.Second)
-	res,_:=cli.Get(context.Background(),"k2")
+	cli.SetWithExpiration(context.Background(),"k2",nil,6*time.Second)
+	//time.Sleep(2*time.Second)
+	res,err:=cli.Get(context.Background(),"k2")
+	if err!=nil {
+		log.Printf("get failed :%v",err)
+	}
 	print(string(res))
 	select {}
 }

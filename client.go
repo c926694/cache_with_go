@@ -32,18 +32,15 @@ func (c *Client) Close() error {
 }
 
 func (c *Client) Set(ctx context.Context, key string, value []byte) error {
-	req := &pb.SetRequest{
-		Key:   key,
-		Value: value,
-	}
-	res,err:=c.grpcCli.Set(ctx,req)
-	if err != nil {
-		return fmt.Errorf("failed to set value to cache: %v", err)
-	}
-	log.Printf("grpc set req:%v res:%v",req,res)
-	return nil
+	return c.SetWithExpiration(ctx,key,value,0)
 }
 func (c *Client) SetWithExpiration(ctx context.Context, key string, value []byte, expiration time.Duration) error {
+	if expiration < 0 { 
+		return fmt.Errorf("expiration must be non-negative")
+	}
+	if value == nil {
+		return fmt.Errorf("value is nil")
+	}
 	req := &pb.SetWithExpirationRequest{
 		Key:   key,
 		Value: value,
