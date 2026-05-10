@@ -49,6 +49,8 @@ func (c *LRUCacheImpl) Get(key string) (Value, bool) {
 		c.ll.MoveToFront(ele)
 		return ele.Value.(*entry).value, true
 	}
+	//过期需要删除key
+	c.removeElementLocked(ele)
 	return nil, false
 }
 
@@ -69,7 +71,11 @@ func (c *LRUCacheImpl) SetWithExpiration(key string, value Value, expiration tim
 	}
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	expTime:=time.Now().Add(expiration)
+	var expTime time.Time
+	//当expiration > 0 才设置过期时间,否则不设置过期时间,0表示永不过期
+	if expiration > 0 {
+		expTime = time.Now().Add(expiration)
+	}
 	if ele, ok := c.cache[key]; ok {
 		//key存在,更新value和expiration时间
 		kv := ele.Value.(*entry)
@@ -121,5 +127,6 @@ func (c *LRUCacheImpl) removeElementLocked(ele *list.Element) {
 	c.ll.Remove(ele)
 	kv := ele.Value.(*entry)
 	delete(c.cache, kv.key)
+	delete(c.expires,kv.key)
 	c.usedBytes -= int64(len(kv.key)) + int64(kv.value.Len())
 }

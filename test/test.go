@@ -14,13 +14,12 @@ func main() {
 	if err!=nil {
 		panic(err)
 	}
-	cli.SetWithExpiration(context.Background(),"k1",[]byte("v1"),2*time.Second)
+	cli.Set(context.Background(),"k1",[]byte("v1"))
+	cli.SetWithExpiration(context.Background(),"k2",[]byte("v2"),2*time.Second)
 	time.Sleep(2*time.Second)
-	res,_:=cli.Get(context.Background(),"k1")
+	res,_:=cli.Get(context.Background(),"k2")
 	print(string(res))
-	select {
-
-	}
+	select {}
 }
 
 func print(a any) {
