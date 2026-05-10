@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type CacheClient interface {
 	Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error)
 	Set(ctx context.Context, in *SetRequest, opts ...grpc.CallOption) (*SetResponse, error)
+	SetWithExpiration(ctx context.Context, in *SetWithExpirationRequest, opts ...grpc.CallOption) (*SetWithExpirationResponse, error)
 	Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error)
 }
 
@@ -53,6 +54,15 @@ func (c *cacheClient) Set(ctx context.Context, in *SetRequest, opts ...grpc.Call
 	return out, nil
 }
 
+func (c *cacheClient) SetWithExpiration(ctx context.Context, in *SetWithExpirationRequest, opts ...grpc.CallOption) (*SetWithExpirationResponse, error) {
+	out := new(SetWithExpirationResponse)
+	err := c.cc.Invoke(ctx, "/pb.Cache/SetWithExpiration", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *cacheClient) Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error) {
 	out := new(DeleteResponse)
 	err := c.cc.Invoke(ctx, "/pb.Cache/Delete", in, out, opts...)
@@ -68,6 +78,7 @@ func (c *cacheClient) Delete(ctx context.Context, in *DeleteRequest, opts ...grp
 type CacheServer interface {
 	Get(context.Context, *GetRequest) (*GetResponse, error)
 	Set(context.Context, *SetRequest) (*SetResponse, error)
+	SetWithExpiration(context.Context, *SetWithExpirationRequest) (*SetWithExpirationResponse, error)
 	Delete(context.Context, *DeleteRequest) (*DeleteResponse, error)
 	mustEmbedUnimplementedCacheServer()
 }
@@ -81,6 +92,9 @@ func (UnimplementedCacheServer) Get(context.Context, *GetRequest) (*GetResponse,
 }
 func (UnimplementedCacheServer) Set(context.Context, *SetRequest) (*SetResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Set not implemented")
+}
+func (UnimplementedCacheServer) SetWithExpiration(context.Context, *SetWithExpirationRequest) (*SetWithExpirationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetWithExpiration not implemented")
 }
 func (UnimplementedCacheServer) Delete(context.Context, *DeleteRequest) (*DeleteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
@@ -134,6 +148,24 @@ func _Cache_Set_Handler(srv interface{}, ctx context.Context, dec func(interface
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Cache_SetWithExpiration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetWithExpirationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CacheServer).SetWithExpiration(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.Cache/SetWithExpiration",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CacheServer).SetWithExpiration(ctx, req.(*SetWithExpirationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Cache_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteRequest)
 	if err := dec(in); err != nil {
@@ -166,6 +198,10 @@ var Cache_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Set",
 			Handler:    _Cache_Set_Handler,
+		},
+		{
+			MethodName: "SetWithExpiration",
+			Handler:    _Cache_SetWithExpiration_Handler,
 		},
 		{
 			MethodName: "Delete",

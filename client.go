@@ -5,6 +5,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
+
 	"google.golang.org/grpc"
 )
 
@@ -39,6 +41,19 @@ func (c *Client) Set(ctx context.Context, key string, value []byte) error {
 		return fmt.Errorf("failed to set value to cache: %v", err)
 	}
 	log.Printf("grpc set req:%v res:%v",req,res)
+	return nil
+}
+func (c *Client) SetWithExpiration(ctx context.Context, key string, value []byte, expiration time.Duration) error {
+	req := &pb.SetWithExpirationRequest{
+		Key:   key,
+		Value: value,
+		Expiration: int64(expiration),
+	}
+	res,err:=c.grpcCli.SetWithExpiration(ctx,req)
+	if err != nil {
+		return fmt.Errorf("failed to set value with expiration to cache: %v", err)
+	}
+	log.Printf("grpc set with expiration req:%v res:%v",req,res)
 	return nil
 }
 

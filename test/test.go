@@ -4,6 +4,7 @@ import (
 	"cache"
 	"context"
 	"fmt"
+	"time"
 )
 
 func main() {
@@ -13,20 +14,10 @@ func main() {
 	if err!=nil {
 		panic(err)
 	}
-	go func() {
-		for i:=0;i<100;i++ {
-			key:="key:1"
-			value:=[]byte("value:1")
-			cli.Set(context.Background(),key,value)
-		}
-	}()
-	go func() {
-		for i:=0;i<100;i++ {
-			key:="key:1"
-			cli.Delete(context.Background(),key)
-			//print("deleted")
-		}
-	}()
+	cli.SetWithExpiration(context.Background(),"k1",[]byte("v1"),2*time.Second)
+	time.Sleep(2*time.Second)
+	res,_:=cli.Get(context.Background(),"k1")
+	print(string(res))
 	select {
 
 	}

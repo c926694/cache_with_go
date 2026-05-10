@@ -1,6 +1,9 @@
 package cache
 
-import "cache/lru"
+import (
+	"cache/lru"
+	"time"
+)
 
 type Cache struct {
 	lru *lru.LRUCacheImpl
@@ -22,6 +25,10 @@ func (c *Cache) Get(key string) (ByteView, bool) {
 
 func (c *Cache) Set(key string, value ByteView) {
 	c.lru.Set(key, value)
+}
+
+func (c *Cache) SetWithExpiration(key string, value ByteView, expiration time.Duration) {
+	c.lru.SetWithExpiration(key, value, expiration)
 }
 
 func (c *Cache) Delete(key string) bool {

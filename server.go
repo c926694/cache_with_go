@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"time"
 
 	"google.golang.org/grpc"
 )
@@ -45,6 +46,13 @@ func (s *Server) Delete(ctx context.Context, req *pb.DeleteRequest) (*pb.DeleteR
 		return nil, fmt.Errorf("key not found")
 	}
 	return &pb.DeleteResponse{}, nil
+}
+
+func (s *Server) SetWithExpiration(ctx context.Context, req *pb.SetWithExpirationRequest) (*pb.SetWithExpirationResponse, error) {
+	// TODO: implement the SetWithExpiration method
+	value:=NewByteView(req.Value)
+	s.cache.SetWithExpiration(req.Key,value,time.Duration(req.Expiration))
+	return &pb.SetWithExpirationResponse{}, nil
 }
 
 func (s *Server) Start() error {

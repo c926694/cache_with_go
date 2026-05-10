@@ -10,6 +10,12 @@ message SetRequest {
   string key = 1;
   bytes value = 2;
 }
+message SetWithExpirationRequest {
+  string key = 1;
+  bytes value = 2;
+  int64 expiration = 3;
+}
+
 message DeleteRequest {
   string key = 1;
 }
@@ -23,9 +29,13 @@ message SetResponse {
 message DeleteResponse {
   bool success = 1;
 }
+message SetWithExpirationResponse {
+  bool success = 1;
+}
 
 service Cache {
   rpc Get(GetRequest) returns (GetResponse);
   rpc Set(SetRequest) returns (SetResponse);
+  rpc SetWithExpiration(SetWithExpirationRequest) returns (SetWithExpirationResponse);
   rpc Delete(DeleteRequest) returns (DeleteResponse);
 }
