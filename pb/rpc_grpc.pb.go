@@ -18,158 +18,158 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// KamaCacheClient is the client API for KamaCache service.
+// CacheClient is the client API for Cache service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type KamaCacheClient interface {
+type CacheClient interface {
 	Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error)
 	Set(ctx context.Context, in *SetRequest, opts ...grpc.CallOption) (*SetResponse, error)
 	Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error)
 }
 
-type kamaCacheClient struct {
+type cacheClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewKamaCacheClient(cc grpc.ClientConnInterface) KamaCacheClient {
-	return &kamaCacheClient{cc}
+func NewCacheClient(cc grpc.ClientConnInterface) CacheClient {
+	return &cacheClient{cc}
 }
 
-func (c *kamaCacheClient) Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error) {
+func (c *cacheClient) Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error) {
 	out := new(GetResponse)
-	err := c.cc.Invoke(ctx, "/pb.KamaCache/Get", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/pb.Cache/Get", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *kamaCacheClient) Set(ctx context.Context, in *SetRequest, opts ...grpc.CallOption) (*SetResponse, error) {
+func (c *cacheClient) Set(ctx context.Context, in *SetRequest, opts ...grpc.CallOption) (*SetResponse, error) {
 	out := new(SetResponse)
-	err := c.cc.Invoke(ctx, "/pb.KamaCache/Set", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/pb.Cache/Set", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *kamaCacheClient) Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error) {
+func (c *cacheClient) Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error) {
 	out := new(DeleteResponse)
-	err := c.cc.Invoke(ctx, "/pb.KamaCache/Delete", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/pb.Cache/Delete", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// KamaCacheServer is the server API for KamaCache service.
-// All implementations must embed UnimplementedKamaCacheServer
+// CacheServer is the server API for Cache service.
+// All implementations must embed UnimplementedCacheServer
 // for forward compatibility
-type KamaCacheServer interface {
+type CacheServer interface {
 	Get(context.Context, *GetRequest) (*GetResponse, error)
 	Set(context.Context, *SetRequest) (*SetResponse, error)
 	Delete(context.Context, *DeleteRequest) (*DeleteResponse, error)
-	mustEmbedUnimplementedKamaCacheServer()
+	mustEmbedUnimplementedCacheServer()
 }
 
-// UnimplementedKamaCacheServer must be embedded to have forward compatible implementations.
-type UnimplementedKamaCacheServer struct {
+// UnimplementedCacheServer must be embedded to have forward compatible implementations.
+type UnimplementedCacheServer struct {
 }
 
-func (UnimplementedKamaCacheServer) Get(context.Context, *GetRequest) (*GetResponse, error) {
+func (UnimplementedCacheServer) Get(context.Context, *GetRequest) (*GetResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
 }
-func (UnimplementedKamaCacheServer) Set(context.Context, *SetRequest) (*SetResponse, error) {
+func (UnimplementedCacheServer) Set(context.Context, *SetRequest) (*SetResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Set not implemented")
 }
-func (UnimplementedKamaCacheServer) Delete(context.Context, *DeleteRequest) (*DeleteResponse, error) {
+func (UnimplementedCacheServer) Delete(context.Context, *DeleteRequest) (*DeleteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
 }
-func (UnimplementedKamaCacheServer) mustEmbedUnimplementedKamaCacheServer() {}
+func (UnimplementedCacheServer) mustEmbedUnimplementedCacheServer() {}
 
-// UnsafeKamaCacheServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to KamaCacheServer will
+// UnsafeCacheServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to CacheServer will
 // result in compilation errors.
-type UnsafeKamaCacheServer interface {
-	mustEmbedUnimplementedKamaCacheServer()
+type UnsafeCacheServer interface {
+	mustEmbedUnimplementedCacheServer()
 }
 
-func RegisterKamaCacheServer(s grpc.ServiceRegistrar, srv KamaCacheServer) {
-	s.RegisterService(&KamaCache_ServiceDesc, srv)
+func RegisterCacheServer(s grpc.ServiceRegistrar, srv CacheServer) {
+	s.RegisterService(&Cache_ServiceDesc, srv)
 }
 
-func _KamaCache_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Cache_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(KamaCacheServer).Get(ctx, in)
+		return srv.(CacheServer).Get(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/pb.KamaCache/Get",
+		FullMethod: "/pb.Cache/Get",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(KamaCacheServer).Get(ctx, req.(*GetRequest))
+		return srv.(CacheServer).Get(ctx, req.(*GetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _KamaCache_Set_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Cache_Set_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SetRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(KamaCacheServer).Set(ctx, in)
+		return srv.(CacheServer).Set(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/pb.KamaCache/Set",
+		FullMethod: "/pb.Cache/Set",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(KamaCacheServer).Set(ctx, req.(*SetRequest))
+		return srv.(CacheServer).Set(ctx, req.(*SetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _KamaCache_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Cache_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(KamaCacheServer).Delete(ctx, in)
+		return srv.(CacheServer).Delete(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/pb.KamaCache/Delete",
+		FullMethod: "/pb.Cache/Delete",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(KamaCacheServer).Delete(ctx, req.(*DeleteRequest))
+		return srv.(CacheServer).Delete(ctx, req.(*DeleteRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// KamaCache_ServiceDesc is the grpc.ServiceDesc for KamaCache service.
+// Cache_ServiceDesc is the grpc.ServiceDesc for Cache service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var KamaCache_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "pb.KamaCache",
-	HandlerType: (*KamaCacheServer)(nil),
+var Cache_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "pb.Cache",
+	HandlerType: (*CacheServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "Get",
-			Handler:    _KamaCache_Get_Handler,
+			Handler:    _Cache_Get_Handler,
 		},
 		{
 			MethodName: "Set",
-			Handler:    _KamaCache_Set_Handler,
+			Handler:    _Cache_Set_Handler,
 		},
 		{
 			MethodName: "Delete",
-			Handler:    _KamaCache_Delete_Handler,
+			Handler:    _Cache_Delete_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

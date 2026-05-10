@@ -3,7 +3,7 @@ package cache
 import "cache/lru"
 
 type Cache struct {
-	lru *lru.LRUCache
+	lru *lru.LRUCacheImpl
 }
 
 func NewCache(maxBytes int64) *Cache {
@@ -22,6 +22,10 @@ func (c *Cache) Get(key string) (ByteView, bool) {
 
 func (c *Cache) Set(key string, value ByteView) {
 	c.lru.Set(key, value)
+}
+
+func (c *Cache) Delete(key string) bool {
+	return c.lru.Delete(key)
 }
 
 func (c *Cache) UsedBytes() int64 {
