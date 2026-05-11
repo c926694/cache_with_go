@@ -9,9 +9,7 @@ import (
 )
 
 func main() {
-	s:=cache.NewServer(1024)
-	go s.Start()
-	cli,err:=cache.NewClient("127.0.0.1:8080")
+	cli,err:=cache.NewClient("127.0.0.1:3000")
 	if err!=nil {
 		panic(err)
 	}

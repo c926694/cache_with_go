@@ -14,11 +14,13 @@ import (
 type Server struct {
 	pb.UnimplementedCacheServer
 	cache *Cache
+	addr string
 }
 
-func NewServer(capacity int) *Server {
+func NewServer(capacity int,addr string) *Server {
 	return &Server{
 		cache: NewCache(int64(capacity)),
+		addr: addr,
 	}
 }
 
@@ -57,12 +59,11 @@ func (s *Server) SetWithExpiration(ctx context.Context, req *pb.SetWithExpiratio
 
 func (s *Server) Start() error {
 	// TODO: implement the Start method
-	l,err:=net.Listen("tcp","127.0.0.1:8080")
+	l,err:=net.Listen("tcp",s.addr)
 	if err!=nil{
-		log.Fatal("listen 8080 failed")
+		log.Fatalf("listen addr %s  failed",s.addr)
 	}
 	server:=grpc.NewServer()
 	pb.RegisterCacheServer(server,s)
 	return server.Serve(l)
 }
-
