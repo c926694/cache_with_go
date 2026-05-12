@@ -8,20 +8,23 @@ import (
 	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
 type Client struct {
-	conn *grpc.ClientConn
-	grpcCli pb.CacheClient
+	conn      *grpc.ClientConn
+	grpcCli   pb.CacheClient
+	healthCli grpc_health_v1.HealthClient
 }
 
-func NewClient(addr string) (*Client, error) { 
+func NewClient(addr string) (*Client, error) {
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
 		return nil, fmt.Errorf("failed to dial server: %v", err)
 	}
 	grpcCli := pb.NewCacheClient(conn)
-	return &Client{conn: conn, grpcCli: grpcCli}, nil
+	healthCli := grpc_health_v1.NewHealthClient(conn)
+	return &Client{conn: conn, grpcCli: grpcCli, healthCli: healthCli}, nil
 }
 
 func (c *Client) Close() error {
@@ -32,25 +35,31 @@ func (c *Client) Close() error {
 }
 
 func (c *Client) Set(ctx context.Context, key string, value []byte) error {
-	return c.SetWithExpiration(ctx,key,value,0)
+	return c.SetWithExpiration(ctx, key, value, 0)
 }
+
+func (c *Client) Ping(ctx context.Context) error {
+	res, err := c.healthCli.Check(ctx, &grpc_health_v1.HealthCheckRequest{})
+	if err != nil {
+		return fmt.Errorf("failed to ping cache server: %v", err)
+	}
+	if res.Status != grpc_health_v1.HealthCheckResponse_SERVING {
+		return fmt.Errorf("cache server status is %s", res.Status.String())
+	}
+	return nil
+}
+
 func (c *Client) SetWithExpiration(ctx context.Context, key string, value []byte, expiration time.Duration) error {
-	if expiration < 0 { 
-		return fmt.Errorf("expiration must be non-negative")
-	}
-	if value == nil {
-		return fmt.Errorf("value is nil")
-	}
 	req := &pb.SetWithExpirationRequest{
-		Key:   key,
-		Value: value,
+		Key:        key,
+		Value:      value,
 		Expiration: int64(expiration),
 	}
-	res,err:=c.grpcCli.SetWithExpiration(ctx,req)
+	res, err := c.grpcCli.SetWithExpiration(ctx, req)
 	if err != nil {
 		return fmt.Errorf("failed to set value with expiration to cache: %v", err)
 	}
-	log.Printf("grpc set with expiration req:%v res:%v",req,res)
+	log.Printf("grpc set with expiration req:%v res:%v", req, res)
 	return nil
 }
 
@@ -58,22 +67,22 @@ func (c *Client) Get(ctx context.Context, key string) ([]byte, error) {
 	req := &pb.GetRequest{
 		Key: key,
 	}
-	res,err:=c.grpcCli.Get(ctx,req)
+	res, err := c.grpcCli.Get(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get value from cache: %v", err)
 	}
-	log.Printf("grpc get req:%v res:%v",req,res)
-	return res.Value,nil
+	log.Printf("grpc get req:%v res:%v", req, res)
+	return res.Value, nil
 }
 
-func (c *Client) Delete(ctx context.Context, key string) error { 
+func (c *Client) Delete(ctx context.Context, key string) error {
 	req := &pb.DeleteRequest{
 		Key: key,
 	}
-	res,err:=c.grpcCli.Delete(ctx,req)
+	res, err := c.grpcCli.Delete(ctx, req)
 	if err != nil {
 		return fmt.Errorf("failed to delete value from cache: %v", err)
 	}
-	log.Printf("grpc delete req:%v res:%v",req,res)
+	log.Printf("grpc delete req:%v res:%v", req, res)
 	return nil
 }
