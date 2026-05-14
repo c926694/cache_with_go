@@ -3,14 +3,15 @@ package cache
 import (
 	"cache/pb"
 	"context"
-	"fmt"
 	"log"
 	"net"
 	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
+	"google.golang.org/grpc/status"
 )
 
 type Server struct {
@@ -37,7 +38,7 @@ func (s *Server) Get(ctx context.Context, req *pb.GetRequest) (*pb.GetResponse, 
 	// TODO: implement the Get method
 	value, ok := s.cache.Get(req.Key)
 	if !ok {
-		return nil, keyNotFound
+		return nil, status.Error(codes.NotFound, "key not found")
 	}
 	return &pb.GetResponse{
 		Value: value.ByteSlice(),
@@ -47,7 +48,8 @@ func (s *Server) Delete(ctx context.Context, req *pb.DeleteRequest) (*pb.DeleteR
 	// TODO: implement the Delete method
 	ok := s.cache.Delete(req.Key)
 	if !ok {
-		return nil, fmt.Errorf("key not found")
+		//grpc错误处理
+		return nil, status.Error(codes.NotFound, "key not found")
 	}
 	return &pb.DeleteResponse{}, nil
 }

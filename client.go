@@ -4,13 +4,14 @@ import (
 	"cache/pb"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/health/grpc_health_v1"
+	"google.golang.org/grpc/status"
 )
 
 type Client struct {
@@ -21,7 +22,6 @@ type Client struct {
 
 
 
-var keyNotFound = errors.New("key not found")
 
 func NewClient(addr string) (*Client, error) {
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
@@ -77,7 +77,7 @@ func (c *Client) Get(ctx context.Context, key string, getter Getter,args ...any)
 	}
 	res, err := c.grpcCli.Get(ctx, req)
 	if err != nil {
-		if !errors.Is(err,keyNotFound) {
+		if status.Code(err) != codes.NotFound {
 			return nil, fmt.Errorf("failed to get value from cache: %v", err)
 		}
 		//key不存在，则调用getter获取值

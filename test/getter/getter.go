@@ -26,11 +26,11 @@ func main() {
 }
 
 func getUserByID(id int) (User,error) {
-	return  User{id:id,username:"admin",password:"admin"},nil
+	return  User{id:id,Username:"admin",Password:"admin"},nil
 }
 
 type User struct {
 	id int
-	username string
-	password string
+	Username string
+	Password string
 }
