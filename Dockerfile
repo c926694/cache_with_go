@@ -7,7 +7,7 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o cache-server ./cmd/cache-server
+RUN go build -o cache-server ./cmd
 
 FROM alpine:3.22
 

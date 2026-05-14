@@ -37,7 +37,7 @@ func (s *Server) Get(ctx context.Context, req *pb.GetRequest) (*pb.GetResponse, 
 	// TODO: implement the Get method
 	value, ok := s.cache.Get(req.Key)
 	if !ok {
-		return nil, fmt.Errorf("key not found")
+		return nil, keyNotFound
 	}
 	return &pb.GetResponse{
 		Value: value.ByteSlice(),

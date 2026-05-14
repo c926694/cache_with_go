@@ -13,6 +13,8 @@ type ClusterClient struct {
 	clients map[string]*Client
 }
 
+type Getter func (args ...any) (any, error)
+
 func NewClusterClient(replicas uint, addrs ...string) (*ClusterClient, error) {
 	uniqueAddrs, err := validNodeAddrs(addrs)
 	if err != nil {
@@ -82,9 +84,9 @@ func (c *ClusterClient) Delete(ctx context.Context, key string) error {
 	return node.Delete(ctx, key)
 }
 
-func (c *ClusterClient) Get(ctx context.Context, key string) ([]byte, error) {
+func (c *ClusterClient) Get(ctx context.Context, key string, getter Getter, args ...any) ([]byte, error) {
 	node := c.getNode(key)
-	return node.Get(ctx, key)
+	return node.Get(ctx, key, getter, args...)
 }
 
 func (c *ClusterClient) Set(ctx context.Context, key string, value []byte) error {

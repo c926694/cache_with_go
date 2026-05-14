@@ -3,6 +3,8 @@ package cache
 import (
 	"cache/pb"
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -16,6 +18,10 @@ type Client struct {
 	grpcCli   pb.CacheClient
 	healthCli grpc_health_v1.HealthClient
 }
+
+
+
+var keyNotFound = errors.New("key not found")
 
 func NewClient(addr string) (*Client, error) {
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
@@ -63,13 +69,32 @@ func (c *Client) SetWithExpiration(ctx context.Context, key string, value []byte
 	return nil
 }
 
-func (c *Client) Get(ctx context.Context, key string) ([]byte, error) {
+const getterCacheExpiration = 1 * time.Minute
+
+func (c *Client) Get(ctx context.Context, key string, getter Getter,args ...any) ([]byte, error) {
 	req := &pb.GetRequest{
 		Key: key,
 	}
 	res, err := c.grpcCli.Get(ctx, req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get value from cache: %v", err)
+		if !errors.Is(err,keyNotFound) {
+			return nil, fmt.Errorf("failed to get value from cache: %v", err)
+		}
+		//key不存在，则调用getter获取值
+		data,err:=getter(args...)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get value from getter: %v", err)
+		}
+		//序列化值
+		value, err := json.Marshal(data)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal value: %v", err)
+		}
+		//存入缓存
+		if err=c.SetWithExpiration(ctx,key,value,getterCacheExpiration); err!=nil{
+			return nil, fmt.Errorf("failed to set value with expiration to cache: %v", err)
+		}
+		return value, nil
 	}
 	log.Printf("grpc get req:%v res:%v", req, res)
 	return res.Value, nil
