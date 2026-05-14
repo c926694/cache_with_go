@@ -84,9 +84,9 @@ func (c *ClusterClient) Delete(ctx context.Context, key string) error {
 	return node.Delete(ctx, key)
 }
 
-func (c *ClusterClient) Get(ctx context.Context, key string, getter Getter, args ...any) ([]byte, error) {
+func (c *ClusterClient) Get(ctx context.Context, key string, getter Getter,cacheExpiration time.Duration, dbArgs ...any) ([]byte, error) {
 	node := c.getNode(key)
-	return node.Get(ctx, key, getter, args...)
+	return node.Get(ctx, key, getter,cacheExpiration, dbArgs...)
 }
 
 func (c *ClusterClient) Set(ctx context.Context, key string, value []byte) error {

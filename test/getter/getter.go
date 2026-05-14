@@ -3,6 +3,8 @@ package main
 import (
 	"cache"
 	"context"
+	"encoding/json"
+	"fmt"
 )
 
 func main() {
@@ -13,24 +15,26 @@ func main() {
 	var getter= func (args ...any) (any, error) {
 		return getUserByID(args[0].(int))
 	}
-	user,err:=cli.Get(context.Background(),"k1",getter,6)
+	user,err:=cli.Get(context.Background(),"k1",getter,0,6)
 	if err!=nil {
 		panic(err)
 	}
 	print(user)
-	user,err=cli.Get(context.Background(),"k1",getter,6)
+	user,err=cli.Get(context.Background(),"k1",getter,0,6)
 	if err!=nil {
 		panic(err)
 	}
-	print(user)
+	var u User
+	json.Unmarshal(user,&u)
+	fmt.Printf("%v",u)
 }
 
 func getUserByID(id int) (User,error) {
-	return  User{id:id,Username:"admin",Password:"admin"},nil
+	return  User{Id:id,Username:"admin",Password:"admin"},nil
 }
 
 type User struct {
-	id int
+	Id int
 	Username string
 	Password string
 }
