@@ -1,6 +1,8 @@
 FROM golang:1.26-alpine AS build
 
 WORKDIR /app
+ARG GOPROXY=https://goproxy.cn,direct
+ENV GOPROXY=${GOPROXY}
 
 COPY go.mod go.sum ./
 RUN go mod download
@@ -17,4 +19,5 @@ COPY --from=build /app/cache-server .
 
 EXPOSE 3000
 
-CMD ["./cache-server", "-addr", "0.0.0.0:3000", "-capacity", "67108864"]
+ENTRYPOINT ["./cache-server"]
+CMD ["-addr", "0.0.0.0:3000", "-capacity", "67108864"]
