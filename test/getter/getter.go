@@ -8,7 +8,8 @@ import (
 )
 
 func main() {
-	cli, err := cache.NewClusterClient(1, "127.0.0.1:3000")
+	endpoints:=[]string{"127.0.0.1:2379"}
+	cli, err := cache.NewEtcdClusterClient(context.Background(),1,endpoints,"cache")
 	if err != nil {
 		panic(err)
 	}

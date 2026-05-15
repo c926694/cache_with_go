@@ -8,22 +8,19 @@ import (
 	"log"
 	"time"
 
+	"golang.org/x/sync/singleflight"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/status"
-	"golang.org/x/sync/singleflight"
 )
 
 type Client struct {
 	conn      *grpc.ClientConn
 	grpcCli   pb.CacheClient
 	healthCli grpc_health_v1.HealthClient
-	sfGroup singleflight.Group
+	sfGroup   singleflight.Group
 }
-
-
-
 
 func NewClient(addr string) (*Client, error) {
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
@@ -32,7 +29,7 @@ func NewClient(addr string) (*Client, error) {
 	}
 	grpcCli := pb.NewCacheClient(conn)
 	healthCli := grpc_health_v1.NewHealthClient(conn)
-	return &Client{conn: conn, grpcCli: grpcCli, healthCli: healthCli,sfGroup: singleflight.Group{}}, nil
+	return &Client{conn: conn, grpcCli: grpcCli, healthCli: healthCli, sfGroup: singleflight.Group{}}, nil
 }
 
 func (c *Client) Close() error {
@@ -73,7 +70,7 @@ func (c *Client) SetWithExpiration(ctx context.Context, key string, value []byte
 
 const getterCacheExpiration = 1 * time.Minute
 
-func (c *Client) Get(ctx context.Context, key string, getter Getter,cacheExpiration time.Duration, dbArgs ...any) ([]byte, error) {
+func (c *Client) Get(ctx context.Context, key string, getter Getter, cacheExpiration time.Duration, dbArgs ...any) ([]byte, error) {
 	req := &pb.GetRequest{
 		Key: key,
 	}
@@ -82,10 +79,14 @@ func (c *Client) Get(ctx context.Context, key string, getter Getter,cacheExpirat
 		if status.Code(err) != codes.NotFound {
 			return nil, fmt.Errorf("failed to get value from cache: %v", err)
 		}
+		log.Printf("grpc get req:%v res:%v", req, res)
+		if getter == nil {
+			return nil, fmt.Errorf("key not found")
+		}
 		//key不存在，则调用getter获取值
 		log.Printf("key %s not found, call getter", key)
 		//sf确保只调用一次getter，避免重复调用
-		data,err,_:=c.sfGroup.Do(key,func() (any, error) {
+		data, err, _ := c.sfGroup.Do(key, func() (any, error) {
 			return getter(dbArgs...)
 		})
 		if err != nil {
@@ -97,15 +98,14 @@ func (c *Client) Get(ctx context.Context, key string, getter Getter,cacheExpirat
 			return nil, fmt.Errorf("failed to marshal value: %v", err)
 		}
 		//存入缓存
-		if cacheExpiration==0{
-			cacheExpiration=getterCacheExpiration
+		if cacheExpiration == 0 {
+			cacheExpiration = getterCacheExpiration
 		}
-		if err=c.SetWithExpiration(ctx,key,value,cacheExpiration); err!=nil{
+		if err = c.SetWithExpiration(ctx, key, value, cacheExpiration); err != nil {
 			return nil, fmt.Errorf("failed to set value with expiration to cache: %v", err)
 		}
 		return value, nil
 	}
-	log.Printf("grpc get req:%v res:%v", req, res)
 	return res.Value, nil
 }
 
