@@ -60,11 +60,11 @@ func (c *Client) SetWithExpiration(ctx context.Context, key string, value []byte
 		Value:      value,
 		Expiration: int64(expiration),
 	}
-	res, err := c.grpcCli.SetWithExpiration(ctx, req)
+	_, err := c.grpcCli.SetWithExpiration(ctx, req)
 	if err != nil {
 		return fmt.Errorf("failed to set value with expiration to cache: %v", err)
 	}
-	log.Printf("grpc set with expiration req:%v res:%v", req, res)
+	//log.Printf("grpc set with expiration req:%v res:%v", req, res)
 	return nil
 }
 
@@ -79,7 +79,7 @@ func (c *Client) Get(ctx context.Context, key string, getter Getter, cacheExpira
 		if status.Code(err) != codes.NotFound {
 			return nil, fmt.Errorf("failed to get value from cache: %v", err)
 		}
-		log.Printf("grpc get req:%v res:%v", req, res)
+		//log.Printf("grpc get req:%v res:%v", req, res)
 		if getter == nil {
 			return nil, fmt.Errorf("key not found")
 		}
